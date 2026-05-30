@@ -55,6 +55,16 @@ class PrestamosPantalla(tk.Frame):
         tk.Button(frame_botones, text="Volver", width=10,
                   command=lambda: controller.mostrar_pantalla("biblioteca")).grid(row=0, column=2, padx=5)
 
+        # --- BARRA DE BÚSQUEDA DE PRÉSTAMOS ---
+        frame_buscar = tk.Frame(self, bg="white")
+        frame_buscar.pack(padx=20, pady=(5, 0), anchor="w")
+
+        tk.Label(frame_buscar, text="BUSCAR PRÉSTAMO (Cód. Estudiante):", font=("Arial", 10, "bold"), bg="white").grid(row=0, column=0, padx=(0, 5))
+        self.ent_buscar_prestamo = tk.Entry(frame_buscar, font=("Arial", 10), width=20)
+        self.ent_buscar_prestamo.grid(row=0, column=1, padx=5)
+        tk.Button(frame_buscar, text="Buscar", width=10, command=self.buscar_prestamo).grid(row=0, column=2, padx=5)
+        tk.Button(frame_buscar, text="Mostrar todos", width=12, command=self.cargar_prestamos).grid(row=0, column=3, padx=5)
+
         # --- TABLA PRÉSTAMOS ---
         tk.Label(self, text="PRÉSTAMOS REGISTRADOS  (clic para ver detalle)",
                  font=("Arial", 10, "bold"), bg="white").pack(anchor="w", padx=20, pady=(5, 0))
@@ -177,6 +187,31 @@ class PrestamosPantalla(tk.Frame):
         self.cargar_libros()
         messagebox.showinfo("Éxito", "Préstamo registrado exitosamente.")
         self.limpiar_cajas()
+
+    def buscar_prestamo(self):
+        termino = self.ent_buscar_prestamo.get().strip().lower()
+        if not termino:
+            messagebox.showwarning("Búsqueda vacía", "Por favor, ingrese un código de estudiante para buscar.")
+            return
+
+        for item in self.tabla_prestamos.get_children():
+            self.tabla_prestamos.delete(item)
+        self._estado_modelo.clear()
+
+        encontrado = False
+        for p in self.controller.gestion_prestamos.obtener_todos():
+            if termino in p.codigo_estudiante.lower():
+                indicador, tag = self._calcular_indicador(p.estado, p.fecha_devolucion)
+                iid = self.tabla_prestamos.insert("", "end", values=(
+                    p.codigo_estudiante, p.nombre_estudiante, p.id_libro,
+                    p.nombre_libro, p.cantidad, p.fecha_prestamo,
+                    p.fecha_devolucion, p.dias_multa, indicador
+                ), tags=(tag,))
+                self._estado_modelo[iid] = p.estado
+                encontrado = True
+
+        if not encontrado:
+            messagebox.showinfo("Sin resultados", f"No se encontraron préstamos para el código '{self.ent_buscar_prestamo.get().strip()}'.")
 
     # ------------------------------------------------------------------
 

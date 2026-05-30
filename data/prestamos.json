@@ -1,1 +1,24 @@
-[]
+[
+    {
+        "codigo_estudiante": "1111",
+        "nombre_estudiante": "juan",
+        "id_libro": "1",
+        "nombre_libro": "guayacan",
+        "cantidad": "1",
+        "fecha_prestamo": "29/05/2026",
+        "fecha_devolucion": "13/06/2026",
+        "dias_multa": "0",
+        "estado": "Activo"
+    },
+    {
+        "codigo_estudiante": "222",
+        "nombre_estudiante": "ada",
+        "id_libro": "3",
+        "nombre_libro": "pppp",
+        "cantidad": "1",
+        "fecha_prestamo": "29/05/2026",
+        "fecha_devolucion": "13/06/2026",
+        "dias_multa": "0",
+        "estado": "Activo"
+    }
+]
