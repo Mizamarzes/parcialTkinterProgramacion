@@ -68,6 +68,17 @@ class GestionPrestamos:
                 return True, "Devolución registrada exitosamente."
         return False, "No se encontró un préstamo activo con esos datos."
 
+    def eliminar(self, codigo_estudiante, id_libro):
+        """Elimina el préstamo activo del array y del JSON."""
+        for prestamo in self.lista_prestamos:
+            if (prestamo.codigo_estudiante == codigo_estudiante and
+                    prestamo.id_libro == id_libro and
+                    prestamo.estado == "Activo"):
+                self.lista_prestamos.remove(prestamo)
+                self._guardar_en_json()
+                return True, "Préstamo eliminado correctamente."
+        return False, "No se encontró un préstamo activo con esos datos."
+
     def obtener_todos(self):
         self._cargar_desde_json()
         return self.lista_prestamos

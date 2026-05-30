@@ -78,6 +78,15 @@ class GestionLibros:
                 
         return False, "Error: Libro no encontrado para eliminar."
 
+    def actualizar_copias(self, id_libro, delta):
+        """Suma delta (positivo o negativo) a las copias del libro con el id dado."""
+        for libro in self.lista_libros:
+            if libro.id == id_libro:
+                libro.copias = str(max(0, int(libro.copias) + delta))
+                self._guardar_en_json()
+                return True
+        return False
+
     def obtener_todos(self):
         """Asegura traer la versión más fresca del JSON y devuelve todos los libros."""
         self._cargar_desde_json()

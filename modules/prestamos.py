@@ -165,6 +165,7 @@ class PrestamosPantalla(tk.Frame):
         nuevo = Prestamo(codigo, nombre, id_libro, nombre_libro, "1",
                          fecha_prestamo, fecha_devolucion, "0", "Activo")
         self.controller.gestion_prestamos.registrar(nuevo)
+        self.controller.gestion_libros.actualizar_copias(id_libro, -1)
 
         # Préstamo nuevo siempre es verde (fecha_devolucion es en 15 días)
         iid = self.tabla_prestamos.insert("", "end", values=(
@@ -173,6 +174,7 @@ class PrestamosPantalla(tk.Frame):
         ), tags=("verde",))
         self._estado_modelo[iid] = "Activo"
 
+        self.cargar_libros()
         messagebox.showinfo("Éxito", "Préstamo registrado exitosamente.")
         self.limpiar_cajas()
 
@@ -225,7 +227,7 @@ class PrestamosPantalla(tk.Frame):
         frame_btn.grid(row=len(campos) + 2, column=0, columnspan=2, pady=12)
 
         if estado_modelo == "Activo":
-            tk.Button(frame_btn, text="Marcar Inactivo", width=14,
+            tk.Button(frame_btn, text="Devolver Libro", width=14,
                       command=lambda: self._devolver_desde_modal(item_id, valores, modal)).pack(side="left", padx=8)
 
         tk.Button(frame_btn, text="Cerrar", width=10, command=modal.destroy).pack(side="left", padx=8)
@@ -234,20 +236,12 @@ class PrestamosPantalla(tk.Frame):
         if not messagebox.askyesno("Confirmar devolución", "¿Confirmar la devolución del libro?", parent=modal):
             return
 
-        exito, msg = self.controller.gestion_prestamos.devolver(valores[0], valores[2])
+        exito, msg = self.controller.gestion_prestamos.eliminar(valores[0], valores[2])
         if exito:
-            try:
-                fecha_d = datetime.strptime(valores[6], "%d/%m/%Y")
-                hoy = datetime.now()
-                dias_multa = str(max(0, (hoy.date() - fecha_d.date()).days)) if hoy.date() > fecha_d.date() else "0"
-            except Exception:
-                dias_multa = "0"
-
-            nuevos_valores = list(valores)
-            nuevos_valores[7] = dias_multa
-            nuevos_valores[8] = "●"
-            self.tabla_prestamos.item(item_id, values=nuevos_valores, tags=("verde",))
-            self._estado_modelo[item_id] = "Inactivo"
+            self.controller.gestion_libros.actualizar_copias(valores[2], 1)
+            self.tabla_prestamos.delete(item_id)
+            del self._estado_modelo[item_id]
+            self.cargar_libros()
             messagebox.showinfo("Éxito", msg, parent=modal)
             modal.destroy()
         else:
