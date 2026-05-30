@@ -6,5 +6,21 @@
         "autor": "Daniel Jose",
         "copias": "99",
         "fecha": "22/05/2026"
+    },
+    {
+        "id": "1",
+        "nombre": "guayacan",
+        "editorial": "asdad",
+        "autor": "dasd",
+        "copias": "12",
+        "fecha": "29/05/2026"
+    },
+    {
+        "id": "3",
+        "nombre": "pppp",
+        "editorial": "asdadas",
+        "autor": "sadasd",
+        "copias": "2",
+        "fecha": "29/05/2026"
     }
 ]

@@ -104,6 +104,7 @@ class BibliotecaPantalla(tk.Frame):
         tk.Button(frame_botones_bottom, text="Cancelar", width=12, command=self.limpiar_y_cancelar_edicion).grid(row=0, column=0, padx=15)
         tk.Button(frame_botones_bottom, text="Mostrar datos", width=12, command=self.mostrar_datos_mock).grid(row=0, column=1, padx=15)
         tk.Button(frame_botones_bottom, text="Salir", width=12, command=self.quit).grid(row=0, column=2, padx=15)
+        tk.Button(frame_botones_bottom, text="Préstamos", width=12, command=lambda: self.controller.mostrar_pantalla("prestamos")).grid(row=0, column=3, padx=15)
 
     def actualizar_fecha(self):
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
@@ -128,7 +129,7 @@ class BibliotecaPantalla(tk.Frame):
 
     def limpiar_y_cancelar_edicion(self):
         self.limpiar_cajas()
-        self.ent_buscar.delete(0, tk.END)  # También limpia la barra de búsqueda
+        self.ent_buscar.delete(0, tk.END)  
         self.fila_en_edicion = None
         self.actualizar_fecha()
 
@@ -232,24 +233,19 @@ class BibliotecaPantalla(tk.Frame):
                 libro.fecha
             ))
 
-    # --- NUEVO MÉTODO: BUSCAR EN JSON ---
     def buscar_libro(self):
-        """Filtra y muestra en la grilla los libros que coincidan con el ID o Nombre en el JSON."""
         termino_busqueda = self.ent_buscar.get().strip().lower()
         
         if not termino_busqueda:
             messagebox.showwarning("Búsqueda vacía", "Por favor, ingrese un ID o Nombre de libro para realizar la búsqueda.")
             return
 
-        # 1. Limpiar la tabla para colocar solo los resultados coincidentes
         for item in self.grilla.get_children():
             self.grilla.delete(item)
 
-        # 2. Obtener todos los libros del JSON
         todos_los_libros = self.controller.gestion_libros.obtener_todos()
         encontrado = False
 
-        # 3. Filtrar por ID o Nombre (insensible a mayúsculas/minúsculas)
         for libro in todos_los_libros:
             if termino_busqueda in libro.id.lower() or termino_busqueda in libro.nombre.lower():
                 self.grilla.insert("", "end", values=(
@@ -262,6 +258,5 @@ class BibliotecaPantalla(tk.Frame):
                 ))
                 encontrado = True
 
-        # 4. Notificar si no hubo ninguna coincidencia en el archivo JSON
         if not encontrado:
             messagebox.showinfo("Sin resultados", f"No se encontró ningún libro con el criterio: '{termino_busqueda}'.")
