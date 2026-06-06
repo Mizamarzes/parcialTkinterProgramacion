@@ -3,6 +3,7 @@ from modules.biblioteca import BibliotecaPantalla
 from modules.prestamos import PrestamosPantalla
 from model.Libro import GestionLibros
 from model.Prestamo import GestionPrestamos
+from model.LibrosBaja import GestionLibrosBaja
 
 class BibliotecaApp(tk.Tk):
     def __init__(self):
@@ -13,6 +14,7 @@ class BibliotecaApp(tk.Tk):
 
         self.gestion_libros = GestionLibros()
         self.gestion_prestamos = GestionPrestamos()
+        self.gestion_libros_baja = GestionLibrosBaja()
 
         self.contenedor = tk.Frame(self)
         self.contenedor.pack(fill="both", expand=True)

@@ -1,0 +1,18 @@
+[
+    {
+        "id": "1",
+        "nombre": "guayacan",
+        "editorial": "asdad",
+        "autor": "dasd",
+        "motivo": "No aparece el libro",
+        "fecha_baja": "05/06/2026"
+    },
+    {
+        "id": "1",
+        "nombre": "guayacan",
+        "editorial": "asdad",
+        "autor": "dasd",
+        "motivo": "No aparece el libro",
+        "fecha_baja": "05/06/2026"
+    }
+]

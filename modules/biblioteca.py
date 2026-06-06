@@ -64,6 +64,7 @@ class BibliotecaPantalla(tk.Frame):
         tk.Button(frame_botones_top, text="Editar", width=10, command=self.cargar_registro_a_editar).grid(row=0, column=1, padx=5)
         tk.Button(frame_botones_top, text="Guardar", width=10, command=self.guardar_cambios_dialogo).grid(row=0, column=2, padx=5)
         tk.Button(frame_botones_top, text="Eliminar", width=10, command=self.eliminar_registro).grid(row=0, column=3, padx=5)
+        tk.Button(frame_botones_top, text="Dar de baja", width=10, command=self.abrir_modal_baja).grid(row=0, column=4, padx=5)
 
         # --- NUEVO: BARRA DE BÚSQUEDA ---
         frame_buscar = tk.Frame(self, bg="white")
@@ -260,3 +261,70 @@ class BibliotecaPantalla(tk.Frame):
 
         if not encontrado:
             messagebox.showinfo("Sin resultados", f"No se encontró ningún libro con el criterio: '{termino_busqueda}'.")
+
+    def abrir_modal_baja(self):
+        """Abre un modal para dar de baja una copia del libro seleccionado indicando el motivo."""
+        seleccion = self.grilla.selection()
+        if not seleccion:
+            messagebox.showwarning("Selección vacía", "Por favor, seleccione un libro de la grilla para darlo de baja.")
+            return
+
+        valores = self.grilla.item(seleccion[0], "values")
+        id_libro, nombre, editorial, autor, copias = valores[0], valores[1], valores[2], valores[3], valores[4]
+
+        if int(copias) <= 0:
+            messagebox.showwarning("Sin copias", f"El libro '{nombre}' no tiene copias disponibles para dar de baja.")
+            return
+
+        modal = tk.Toplevel(self)
+        modal.title("Dar de baja un libro")
+        modal.configure(bg="white")
+        modal.resizable(False, False)
+        modal.transient(self.winfo_toplevel())
+        modal.grab_set()
+
+        tk.Label(modal, text="DAR DE BAJA UNA COPIA", font=("Arial", 12, "bold"), bg="white").pack(pady=(15, 5), padx=20)
+        tk.Label(modal, text=f"Libro: {nombre} (ID: {id_libro})", font=("Arial", 10), bg="white").pack(pady=2, padx=20)
+        tk.Label(modal, text=f"Copias actuales: {copias}", font=("Arial", 10, "italic"), bg="white").pack(pady=(2, 10), padx=20)
+
+        tk.Label(modal, text="Seleccione el motivo de la baja:", font=("Arial", 10, "bold"), bg="white").pack(pady=(5, 5), padx=20)
+
+        motivo_var = tk.StringVar(value="Deterioro")
+        motivos = ["Deterioro", "No aparece el libro", "Tiene muy poco movimiento"]
+        for motivo in motivos:
+            tk.Radiobutton(
+                modal, text=motivo, variable=motivo_var, value=motivo,
+                font=("Arial", 10), bg="white", anchor="w"
+            ).pack(fill="x", padx=40, pady=2)
+
+        frame_botones = tk.Frame(modal, bg="white")
+        frame_botones.pack(pady=15)
+
+        tk.Button(
+            frame_botones, text="Confirmar baja", width=14,
+            command=lambda: self.confirmar_baja(
+                modal, seleccion[0], id_libro, nombre, editorial, autor, motivo_var.get()
+            )
+        ).grid(row=0, column=0, padx=10)
+        tk.Button(frame_botones, text="Cancelar", width=14, command=modal.destroy).grid(row=0, column=1, padx=10)
+
+    def confirmar_baja(self, modal, item_grilla, id_libro, nombre, editorial, autor, motivo):
+        """Resta una copia al libro y registra la baja con su motivo en el JSON de bajas."""
+        respuesta = messagebox.askyesno(
+            "Confirmar baja",
+            f"¿Está seguro de dar de baja una copia del libro '{nombre}' por el motivo: '{motivo}'?",
+            parent=modal
+        )
+        if not respuesta:
+            return
+
+        self.controller.gestion_libros.actualizar_copias(id_libro, -1)
+        self.controller.gestion_libros_baja.registrar(id_libro, nombre, editorial, autor, motivo)
+
+        # Refrescar la copia mostrada en la grilla con el valor actualizado
+        valores = list(self.grilla.item(item_grilla, "values"))
+        valores[4] = str(max(0, int(valores[4]) - 1))
+        self.grilla.item(item_grilla, values=valores)
+
+        modal.destroy()
+        messagebox.showinfo("Éxito", f"Se dio de baja una copia del libro '{nombre}'.\nMotivo: {motivo}")
