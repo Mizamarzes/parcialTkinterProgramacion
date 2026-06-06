@@ -14,5 +14,29 @@
         "autor": "dasd",
         "motivo": "No aparece el libro",
         "fecha_baja": "05/06/2026"
+    },
+    {
+        "id": "12",
+        "nombre": "Don quijote de la mancha",
+        "editorial": "asdaaaaaa",
+        "autor": "Daniel Jose",
+        "motivo": "No aparece el libro",
+        "fecha_baja": "05/06/2026"
+    },
+    {
+        "id": "4",
+        "nombre": "paco y las aventuras de raul",
+        "editorial": "aaa",
+        "autor": "aa",
+        "motivo": "Tiene muy poco movimiento",
+        "fecha_baja": "05/06/2026"
+    },
+    {
+        "id": "12",
+        "nombre": "Don quijote de la mancha",
+        "editorial": "asdaaaaaa",
+        "autor": "Daniel Jose",
+        "motivo": "Tiene más de diez años de antigüedad",
+        "fecha_baja": "05/06/2026"
     }
 ]

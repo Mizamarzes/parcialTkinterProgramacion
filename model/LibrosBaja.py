@@ -60,3 +60,11 @@ class GestionLibrosBaja:
         """Asegura traer la versión más fresca del JSON y devuelve todas las bajas."""
         self._cargar_desde_json()
         return self.lista_bajas
+
+    def contar_por_motivo(self):
+        """Devuelve un diccionario {motivo: cantidad} con las bajas agrupadas por motivo."""
+        self._cargar_desde_json()
+        conteo = {}
+        for baja in self.lista_bajas:
+            conteo[baja.motivo] = conteo.get(baja.motivo, 0) + 1
+        return conteo

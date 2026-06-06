@@ -106,6 +106,7 @@ class BibliotecaPantalla(tk.Frame):
         tk.Button(frame_botones_bottom, text="Mostrar datos", width=12, command=self.mostrar_datos_mock).grid(row=0, column=1, padx=15)
         tk.Button(frame_botones_bottom, text="Salir", width=12, command=self.quit).grid(row=0, column=2, padx=15)
         tk.Button(frame_botones_bottom, text="Préstamos", width=12, command=lambda: self.controller.mostrar_pantalla("prestamos")).grid(row=0, column=3, padx=15)
+        tk.Button(frame_botones_bottom, text="Gráfico libros bajados", width=18, command=self.mostrar_grafico_bajas).grid(row=0, column=4, padx=15)
 
     def actualizar_fecha(self):
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
@@ -290,7 +291,7 @@ class BibliotecaPantalla(tk.Frame):
         tk.Label(modal, text="Seleccione el motivo de la baja:", font=("Arial", 10, "bold"), bg="white").pack(pady=(5, 5), padx=20)
 
         motivo_var = tk.StringVar(value="Deterioro")
-        motivos = ["Deterioro", "No aparece el libro", "Tiene muy poco movimiento"]
+        motivos = ["Deterioro", "No aparece el libro", "Tiene muy poco movimiento", "Tiene más de diez años de antigüedad"]
         for motivo in motivos:
             tk.Radiobutton(
                 modal, text=motivo, variable=motivo_var, value=motivo,
@@ -328,3 +329,72 @@ class BibliotecaPantalla(tk.Frame):
 
         modal.destroy()
         messagebox.showinfo("Éxito", f"Se dio de baja una copia del libro '{nombre}'.\nMotivo: {motivo}")
+
+    def mostrar_grafico_bajas(self):
+        """Abre un modal con un diagrama de barras de la cantidad de libros bajados por motivo."""
+        conteo = self.controller.gestion_libros_baja.contar_por_motivo()
+
+        if not conteo:
+            messagebox.showinfo("Sin datos", "Aún no hay libros dados de baja para graficar.")
+            return
+
+        modal = tk.Toplevel(self)
+        modal.title("Gráfico de libros bajados por motivo")
+        modal.configure(bg="white")
+        modal.resizable(False, False)
+        modal.transient(self.winfo_toplevel())
+        modal.grab_set()
+
+        tk.Label(modal, text="LIBROS BAJADOS POR MOTIVO", font=("Arial", 12, "bold"), bg="white").pack(pady=(15, 5), padx=20)
+
+        # --- Parámetros del lienzo ---
+        ancho = 600
+        alto = 400
+        margen_izq = 60
+        margen_inf = 90
+        margen_sup = 30
+        margen_der = 30
+
+        canvas = tk.Canvas(modal, width=ancho, height=alto, bg="white", highlightthickness=0)
+        canvas.pack(padx=20, pady=10)
+
+        base_y = alto - margen_inf
+        area_alto = base_y - margen_sup
+        area_ancho = ancho - margen_izq - margen_der
+
+        # Eje X y eje Y
+        canvas.create_line(margen_izq, base_y, ancho - margen_der, base_y, width=2)
+        canvas.create_line(margen_izq, base_y, margen_izq, margen_sup, width=2)
+
+        max_valor = max(conteo.values())
+
+        # Líneas de referencia y escala en el eje Y (valores enteros)
+        for i in range(max_valor + 1):
+            y = base_y - (area_alto * i / max_valor)
+            canvas.create_line(margen_izq, y, ancho - margen_der, y, fill="#e0e0e0")
+            canvas.create_text(margen_izq - 10, y, text=str(i), anchor="e", font=("Arial", 9))
+
+        # --- Barras ---
+        colores = ["#4a90d9", "#7ed957", "#f4a259", "#d96a6a", "#9b6bd9", "#5ec8c8"]
+        motivos = list(conteo.keys())
+        n = len(motivos)
+        espacio_barra = area_ancho / n
+        ancho_barra = espacio_barra * 0.6
+
+        for indice, motivo in enumerate(motivos):
+            valor = conteo[motivo]
+            altura_barra = area_alto * valor / max_valor
+            x_centro = margen_izq + espacio_barra * (indice + 0.5)
+            x0 = x_centro - ancho_barra / 2
+            x1 = x_centro + ancho_barra / 2
+            y0 = base_y - altura_barra
+            color = colores[indice % len(colores)]
+
+            canvas.create_rectangle(x0, y0, x1, base_y, fill=color, outline="black")
+            # Valor encima de la barra
+            canvas.create_text(x_centro, y0 - 10, text=str(valor), font=("Arial", 10, "bold"))
+            # Etiqueta del motivo debajo del eje (envuelta para que quepa)
+            canvas.create_text(x_centro, base_y + 12, text=motivo, font=("Arial", 9),
+                               width=espacio_barra - 10, anchor="n")
+
+        tk.Button(modal, text="Cerrar", width=12, command=modal.destroy).pack(pady=(5, 15))
